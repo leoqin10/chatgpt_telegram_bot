@@ -5,14 +5,15 @@ import logging
 
 import tiktoken
 import openai
+from logger import Logger
 
 
 # setup openai
 openai.api_key = config.openai_api_key
 if config.openai_api_base is not None:
     openai.api_base = config.openai_api_base
-logger = logging.getLogger(__name__)
-
+# logger = logging.getLogger(__name__)
+logger = Logger
 
 OPENAI_COMPLETION_OPTIONS = {
     "temperature": 0.7,
@@ -39,7 +40,7 @@ class ChatGPT:
             try:
                 if self.model in {"gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4-1106-preview", "gpt-4-vision-preview"}:
                     messages = self._generate_prompt_messages(message, dialog_messages, chat_mode)
-
+                    logger.info(f"messages: {messages}, model: {self.model}")
                     r = await openai.ChatCompletion.acreate(
                         model=self.model,
                         messages=messages,
@@ -80,7 +81,7 @@ class ChatGPT:
             try:
                 if self.model in {"gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-4","gpt-4o", "gpt-4-1106-preview"}:
                     messages = self._generate_prompt_messages(message, dialog_messages, chat_mode)
-
+                    logger.info(f"messages: {messages}, model: {self.model}")
                     r_gen = await openai.ChatCompletion.acreate(
                         model=self.model,
                         messages=messages,

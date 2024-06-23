@@ -1,6 +1,7 @@
 from typing import Optional, Any
 
 import pymongo
+from pymongo.server_api import ServerApi
 import uuid
 from datetime import datetime
 
@@ -9,7 +10,7 @@ import config
 
 class Database:
     def __init__(self):
-        self.client = pymongo.MongoClient(config.mongodb_uri)
+        self.client = pymongo.MongoClient(config.mongodb_uri, server_api=ServerApi('1'))
         self.db = self.client["chatgpt_telegram_bot"]
 
         self.user_collection = self.db["user"]
