@@ -28,7 +28,7 @@ from telegram.constants import ParseMode, ChatAction
 
 import config
 import database
-import openai_utils
+import openai_utils, doubao_utils
 
 import base64
 import os 
@@ -374,9 +374,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     user_id = update.message.from_user.id
     chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
 
-    if chat_mode == "artist":
-        await generate_image_handle(update, context, message=message)
-        return
+    # if chat_mode == "artist":
+    #     await generate_image_handle(update, context, message=message)
+    #     return
 
     current_model = db.get_user_attribute(user_id, "current_model")
 
@@ -408,7 +408,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 "markdown": ParseMode.MARKDOWN
             }[config.chat_modes[chat_mode]["parse_mode"]]
 
-            chatgpt_instance = openai_utils.ChatGPT(model=current_model)
+            # chatgpt_instance = openai_utils.ChatGPT(model=current_model)
+            chatgpt_instance = doubao_utils.Doubao(model=current_model)
             if config.enable_message_streaming:
                 gen = chatgpt_instance.send_message_stream(_message, dialog_messages=dialog_messages, chat_mode=chat_mode)
             else:
