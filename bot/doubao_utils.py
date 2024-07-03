@@ -7,14 +7,15 @@ import time
 
 import tiktoken
 import openai
-from volcenginesdkarkruntime import Ark
+from volcenginesdkarkruntime import Ark, AsyncArk
 from logger import Logger
 
 
 
 logger = Logger
 # client = Ark(api_key="2ee3088d-bf0a-4510-8a9e-46784d29fbb4")
-client = Ark(api_key=config.openai_api_key)
+# client = Ark(api_key=config.openai_api_key)
+client = AsyncArk(api_key=config.openai_api_key)
 
 OPENAI_COMPLETION_OPTIONS = {
     "temperature": 0.7,
@@ -42,8 +43,9 @@ class Doubao:
                 if self.model in {"Doubao-lite-4k"}:
                     messages = self._generate_prompt_messages(message, dialog_messages, chat_mode)
                     logger.info(f"messages: {messages}, model: {self.model}")
+                    client = AsyncArk(api_key=config.openai_api_key)
                     r = await client.chat.completions.create(
-                        model=self.model,
+                        model="ep-20240703152504-npwgs",
                         messages=messages,
                         **OPENAI_COMPLETION_OPTIONS
                     )
@@ -74,22 +76,27 @@ class Doubao:
             try:
                 if self.model in {"Doubao-lite-4k"}:
                     messages = self._generate_prompt_messages(message, dialog_messages, chat_mode)
-                    logger.info(f"messages: {messages}, model: {self.model}")
+                    logger.info(f"steam messages: {messages}, model: {self.model}")
+                    client = AsyncArk(api_key=config.openai_api_key)
                     r_gen = await client.chat.completions.create(
-                        model=self.model,
+                        model="ep-20240703152504-npwgs",
                         messages=messages,
                         stream=True,
                         **OPENAI_COMPLETION_OPTIONS
                     )
-
+                    logger.info(f"dddddddddddddddddddddd{r_gen}")
                     answer = ""
                     async for r_item in r_gen:
+                        logger.info("info r_gen")
                         delta = r_item.choices[0].delta
-
-                        if "content" in delta:
+                        logger.info(f"bbbbbbbbbbbbbbb{delta}")
+                        # if "content" in delta:
+                        if hasattr(delta, "content"):
                             answer += delta.content
-                            n_input_tokens, n_output_tokens = self._count_tokens_from_messages(messages, answer, model=self.model)
+                            # n_input_tokens, n_output_tokens = self._count_tokens_from_messages(messages, answer, model=self.model)
+                            n_input_tokens, n_output_tokens = 10, 10
                             n_first_dialog_messages_removed = 0
+                            logger.info(f"ccccccccccccc{n_input_tokens} {n_output_tokens}")
 
                             yield "not_finished", answer, (n_input_tokens, n_output_tokens), n_first_dialog_messages_removed
 

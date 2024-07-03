@@ -372,21 +372,23 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if await is_previous_message_not_answered_yet(update, context): return
 
     user_id = update.message.from_user.id
-    chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
-
+    # chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
+    chat_mode = "cat"
     # if chat_mode == "artist":
     #     await generate_image_handle(update, context, message=message)
     #     return
+    
 
-    current_model = db.get_user_attribute(user_id, "current_model")
+    # current_model = db.get_user_attribute(user_id, "current_model")
+    current_model = "Doubao-lite-4k"
 
     async def message_handle_fn():
         # new dialog timeout
-        if use_new_dialog_timeout:
-            if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.new_dialog_timeout and len(db.get_dialog_messages(user_id)) > 0:
-                db.start_new_dialog(user_id)
-                await update.message.reply_text(f"Starting new dialog due to timeout (<b>{config.chat_modes[chat_mode]['name']}</b> mode) ✅", parse_mode=ParseMode.HTML)
-        db.set_user_attribute(user_id, "last_interaction", datetime.now())
+        # if use_new_dialog_timeout:
+        #     if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.new_dialog_timeout and len(db.get_dialog_messages(user_id)) > 0:
+                # db.start_new_dialog(user_id)
+                # await update.message.reply_text(f"Starting new dialog due to timeout (<b>{config.chat_modes[chat_mode]['name']}</b> mode) ✅", parse_mode=ParseMode.HTML)
+        # db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
         # in case of CancelledError
         n_input_tokens, n_output_tokens = 0, 0
@@ -402,7 +404,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                  await update.message.reply_text("🥲 You sent <b>empty message</b>. Please, try again!", parse_mode=ParseMode.HTML)
                  return
 
-            dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
+            # dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
             parse_mode = {
                 "html": ParseMode.HTML,
                 "markdown": ParseMode.MARKDOWN
@@ -411,11 +413,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             # chatgpt_instance = openai_utils.ChatGPT(model=current_model)
             chatgpt_instance = doubao_utils.Doubao(model=current_model)
             if config.enable_message_streaming:
-                gen = chatgpt_instance.send_message_stream(_message, dialog_messages=dialog_messages, chat_mode=chat_mode)
+                gen = chatgpt_instance.send_message_stream(_message, dialog_messages=[], chat_mode=chat_mode)
             else:
                 answer, (n_input_tokens, n_output_tokens), n_first_dialog_messages_removed = await chatgpt_instance.send_message(
                     _message,
-                    dialog_messages=dialog_messages,
+                    dialog_messages=[],
                     chat_mode=chat_mode
                 )
 
@@ -450,17 +452,17 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             # update user data
             new_dialog_message = {"user": [{"type": "text", "text": _message}], "bot": answer, "date": datetime.now()}
 
-            db.set_dialog_messages(
-                user_id,
-                db.get_dialog_messages(user_id, dialog_id=None) + [new_dialog_message],
-                dialog_id=None
-            )
-
-            db.update_n_used_tokens(user_id, current_model, n_input_tokens, n_output_tokens)
+            # db.set_dialog_messages(
+            #     user_id,
+            #     db.get_dialog_messages(user_id, dialog_id=None) + [new_dialog_message],
+            #     dialog_id=None
+            # )
+            logger.info("aaaaaaaaaaaaaaaaaaaaa")
+            # db.update_n_used_tokens(user_id, current_model, n_input_tokens, n_output_tokens)
 
         except asyncio.CancelledError:
             # note: intermediate token updates only work when enable_message_streaming=True (config.yml)
-            db.update_n_used_tokens(user_id, current_model, n_input_tokens, n_output_tokens)
+            # db.update_n_used_tokens(user_id, current_model, n_input_tokens, n_output_tokens)
             raise
 
         except Exception as e:
@@ -485,7 +487,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
             if current_model != "gpt-4o" and current_model != "gpt-4-vision-preview":
                 current_model = "gpt-4o"
-                db.set_user_attribute(user_id, "current_model", "gpt-4o")
+                # db.set_user_attribute(user_id, "current_model", "gpt-4o")
             task = asyncio.create_task(
                 _vision_message_handle_fn(update, context, use_new_dialog_timeout=use_new_dialog_timeout)
             )
@@ -585,7 +587,7 @@ async def new_dialog_handle(update: Update, context: CallbackContext):
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    db.set_user_attribute(user_id, "current_model", "gpt-3.5-turbo")
+    db.set_user_attribute(user_id, "current_model", "Doubao-lite-4k")
 
     db.start_new_dialog(user_id)
     await update.message.reply_text("Starting new dialog ✅")
