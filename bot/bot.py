@@ -58,17 +58,12 @@ logger = Logger
 user_semaphores = {}
 user_tasks = {}
 
-HELP_MESSAGE = """Commands:
-⚪ /retry – Regenerate last bot answer
-⚪ /new – Start new dialog
-⚪ /mode – Select chat mode
-⚪ /settings – Show settings
-⚪ /balance – Show balance
-⚪ /help – Show help
+HELP_MESSAGE = """EMCat is the world's first electronic pet to provide companion AI service. You can treat EMCat as your cyber pet cat to play and interact with it. 
+In this group, you can @EMCat and input some text to interact with this cybercat. Enjoy your time with EMCat!
 
-🎨 Generate images from text prompts in <b>👩‍🎨 Artist</b> /mode
-👥 Add bot to <b>group chat</b>: /help_group_chat
-🎤 You can send <b>Voice Messages</b> instead of text
+Commands:
+⚪ /start – Start new dialog
+⚪ /help – Show help
 """
 
 HELP_GROUP_CHAT_MESSAGE = """You can add bot to any <b>group chat</b> to help and entertain its participants!
@@ -89,43 +84,43 @@ def split_text_into_chunks(text, chunk_size):
 
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, user: User):
-    if not db.check_if_user_exists(user.id):
-        db.add_new_user(
-            user.id,
-            update.message.chat_id,
-            username=user.username,
-            first_name=user.first_name,
-            last_name= user.last_name
-        )
-        db.start_new_dialog(user.id)
+    # if not db.check_if_user_exists(user.id):
+    #     db.add_new_user(
+    #         user.id,
+    #         update.message.chat_id,
+    #         username=user.username,
+    #         first_name=user.first_name,
+    #         last_name= user.last_name
+    #     )
+    #     db.start_new_dialog(user.id)
 
-    if db.get_user_attribute(user.id, "current_dialog_id") is None:
-        db.start_new_dialog(user.id)
+    # if db.get_user_attribute(user.id, "current_dialog_id") is None:
+    #     db.start_new_dialog(user.id)
 
     if user.id not in user_semaphores:
         user_semaphores[user.id] = asyncio.Semaphore(1)
 
-    if db.get_user_attribute(user.id, "current_model") is None:
-        db.set_user_attribute(user.id, "current_model", config.models["available_text_models"][0])
+    # if db.get_user_attribute(user.id, "current_model") is None:
+    #     db.set_user_attribute(user.id, "current_model", config.models["available_text_models"][0])
 
     # back compatibility for n_used_tokens field
-    n_used_tokens = db.get_user_attribute(user.id, "n_used_tokens")
-    if isinstance(n_used_tokens, int) or isinstance(n_used_tokens, float):  # old format
-        new_n_used_tokens = {
-            "gpt-3.5-turbo": {
-                "n_input_tokens": 0,
-                "n_output_tokens": n_used_tokens
-            }
-        }
-        db.set_user_attribute(user.id, "n_used_tokens", new_n_used_tokens)
+    # n_used_tokens = db.get_user_attribute(user.id, "n_used_tokens")
+    # if isinstance(n_used_tokens, int) or isinstance(n_used_tokens, float):  # old format
+    #     new_n_used_tokens = {
+    #         "gpt-3.5-turbo": {
+    #             "n_input_tokens": 0,
+    #             "n_output_tokens": n_used_tokens
+    #         }
+    #     }
+    #     db.set_user_attribute(user.id, "n_used_tokens", new_n_used_tokens)
 
     # voice message transcription
-    if db.get_user_attribute(user.id, "n_transcribed_seconds") is None:
-        db.set_user_attribute(user.id, "n_transcribed_seconds", 0.0)
+    # if db.get_user_attribute(user.id, "n_transcribed_seconds") is None:
+    #     db.set_user_attribute(user.id, "n_transcribed_seconds", 0.0)
 
     # image generation
-    if db.get_user_attribute(user.id, "n_generated_images") is None:
-        db.set_user_attribute(user.id, "n_generated_images", 0)
+    # if db.get_user_attribute(user.id, "n_generated_images") is None:
+    #     db.set_user_attribute(user.id, "n_generated_images", 0)
 
 
 async def is_bot_mentioned(update: Update, context: CallbackContext):
@@ -702,7 +697,7 @@ def get_settings_menu(user_id: int):
     current_model = db.get_user_attribute(user_id, "current_model")
     text = config.models["info"][current_model]["description"]
 
-    text += "\n\n"
+    text = "\n\n"
     score_dict = config.models["info"][current_model]["scores"]
     for score_key, score_value in score_dict.items():
         text += "🟢" * score_value + "⚪️" * (5 - score_value) + f" – {score_key}\n\n"
@@ -729,7 +724,7 @@ async def settings_handle(update: Update, context: CallbackContext):
     if await is_previous_message_not_answered_yet(update, context): return
 
     user_id = update.message.from_user.id
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
+    # db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     text, reply_markup = get_settings_menu(user_id)
     await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
@@ -834,11 +829,11 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
 
 async def post_init(application: Application):
     await application.bot.set_my_commands([
-        BotCommand("/new", "Start new dialog"),
-        BotCommand("/mode", "Select chat mode"),
-        BotCommand("/retry", "Re-generate response for previous query"),
-        BotCommand("/balance", "Show balance"),
-        BotCommand("/settings", "Show settings"),
+        BotCommand("/start", "Start new dialog"),
+        # BotCommand("/mode", "Select chat mode"),
+        # BotCommand("/retry", "Re-generate response for previous query"),
+        # BotCommand("/balance", "Show balance"),
+        # BotCommand("/settings", "Show settings"),
         BotCommand("/help", "Show help message"),
     ])
 
@@ -863,16 +858,16 @@ def run_bot() -> None:
         group_ids = [x for x in any_ids if x < 0]
         user_filter = filters.User(username=usernames) | filters.User(user_id=user_ids) | filters.Chat(chat_id=group_ids)
 
-    application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
+    # application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
     application.add_handler(CommandHandler("help_group_chat", help_group_chat_handle, filters=user_filter))
 
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
-    application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND & user_filter, message_handle))
-    application.add_handler(MessageHandler(filters.VIDEO & ~filters.COMMAND & user_filter, unsupport_message_handle))
-    application.add_handler(MessageHandler(filters.Document.ALL & ~filters.COMMAND & user_filter, unsupport_message_handle))
+    # application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND & user_filter, message_handle))
+    # application.add_handler(MessageHandler(filters.VIDEO & ~filters.COMMAND & user_filter, unsupport_message_handle))
+    # application.add_handler(MessageHandler(filters.Document.ALL & ~filters.COMMAND & user_filter, unsupport_message_handle))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
-    application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
+    application.add_handler(CommandHandler("start", new_dialog_handle, filters=user_filter))
     application.add_handler(CommandHandler("cancel", cancel_handle, filters=user_filter))
 
     application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
