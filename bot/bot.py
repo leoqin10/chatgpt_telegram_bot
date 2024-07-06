@@ -58,12 +58,17 @@ logger = Logger
 user_semaphores = {}
 user_tasks = {}
 
-HELP_MESSAGE = """EMCat is the world's first electronic pet to provide companion AI service. You can treat EMCat as your cyber pet cat to play and interact with it. 
-In this group, you can @EMCat and input some text to interact with this cybercat. Enjoy your time with EMCat!
+HELP_MESSAGE = """🐱 Meow! Welcom EMCat Bot!
 
-Commands:
+🦄 EMCat is the world's first electronic pet to provide companion AI service. 
+
+😻 You can treat EMCat as your cyber pet cat to play and interact with it. 
+
+🤖 In this bot, you can use the following command:
 ⚪ /start – Start new dialog
 ⚪ /help – Show help
+
+💖 Enjoy your time with EMCat!
 """
 
 HELP_GROUP_CHAT_MESSAGE = """You can add bot to any <b>group chat</b> to help and entertain its participants!
