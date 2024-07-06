@@ -349,6 +349,7 @@ async def unsupport_message_handle(update: Update, context: CallbackContext, mes
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
     # check if new chat member
+    logger.info(f"new chat members {update.message.new_chat_members}")
     if len(update.message.new_chat_members) > 0:
         welcome_text = f"🐱 Meow! Welcome {update.message.new_chat_members[0].first_name} to EMCat Group!" + "\n" + """🦄 EMCat is the world's first electronic pet to provide companion AI service. 
 🤖 Here, you can @emcat and input some text to interact with this cybercat. 
